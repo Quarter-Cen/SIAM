@@ -24,17 +24,15 @@ def filter_pages(file_obj: io.BytesIO, keywords: list[str]) -> list[int]:
         if any(kw.lower() in lower_text for kw in keywords if kw != special_keyword):
             matched_pages.append(page_num + 1)
 
-        # เก็บหน้าที่เจอ keyword เฉพาะ
-        if special_keyword.lower() in lower_text:
-            special_pages.append(page_num + 1)
+
 
     doc.close()
 
     # ถ้ามีเจอ "บทที่ 5" ให้เอาเฉพาะหน้าสุดท้ายและหน้าสุดท้าย + 1
-    if special_pages:
-        print(special_pages)
-        matched_pages.append(special_pages[-1])
-        matched_pages.append(special_pages[-1] + 1)
+    # if special_pages:
+    #     print(special_pages)
+    #     matched_pages.append(special_pages[-1])
+    #     matched_pages.append(special_pages[-1] + 1)
         
 
     # ลบเลขหน้าซ้ำ และเรียงลำดับ
@@ -83,3 +81,44 @@ def create_pdf_with_pages(file_obj: io.BytesIO, pages_to_keep: list[int]) -> byt
     
     return output_bytes_io.getvalue(), doc_uuid
 
+def filter_spcific_pages(file_obj: io.BytesIO) -> list[int]:
+    """
+    Finds pages in a PDF that contain any of the given keywords.
+    Special case: if the keyword is 'บทที่ 5', only keep the last page where it appears.
+    """
+    doc = fitz.open(stream=file_obj, filetype="pdf")
+
+    matched_pages = []
+    special_keyword = ["บทที่ 5", "บทที่5"]
+    selected_pages = []
+    
+    for page_num in range(len(doc)):
+        page = doc.load_page(page_num)
+        text = page.get_text()
+
+        # lowercase เพื่อค้นหาแบบไม่สนตัวพิมพ์เล็ก/ใหญ่
+        lower_text = text.lower()
+
+        # เก็บหน้าสำหรับทุก keyword ปกติ
+        if any(kw.lower() in lower_text for kw in special_keyword if kw):
+            matched_pages.append(page_num + 1)
+        
+        # เก็บหน้าที่เจอ keyword เฉพาะ
+        # if special_keyword.lower() in lower_text:
+        #     special_pages.append(page_num + 1) 
+        #     print(special_pages)
+        #     matched_pages.append(page_num + 1)
+    doc.close()
+
+    # ถ้ามีเจอ "บทที่ 5" ให้เอาเฉพาะหน้าสุดท้ายและหน้าสุดท้าย + 1
+    if matched_pages:
+        selected_pages.append(matched_pages[-1])
+        selected_pages.append(matched_pages[-1] + 1)
+        print(selected_pages)
+
+        
+
+    # ลบเลขหน้าซ้ำ และเรียงลำดับ
+    selected_pages = sorted(set(selected_pages))
+
+    return selected_pages
