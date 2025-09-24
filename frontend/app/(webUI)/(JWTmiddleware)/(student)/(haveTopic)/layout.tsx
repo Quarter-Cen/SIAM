@@ -1,12 +1,12 @@
 import { AuthProvider } from "@/app/context/AuthContextForStudent";
 import { ReactNode } from "react";
-import Navbar from "@/app/components/Navbar";
+import Header from "@/app/components/Header";
 import IsHaveTopicLayout from "../../../../components/IsHaveTopicLayout";
 export default function TeacherLayout({ children }: { children: ReactNode }) {
   return (
     <AuthProvider>
       <IsHaveTopicLayout>
-        <Navbar />
+        <Header />
         <main>{children}</main>
       </IsHaveTopicLayout>
     </AuthProvider>

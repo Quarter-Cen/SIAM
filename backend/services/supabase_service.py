@@ -402,10 +402,6 @@ def get_project_by_team(tmid: str):
         "year": data_row["year"],      # ตรวจสอบอีกครั้งว่า year ใน DB มีค่าหรือไม่
     }
 
-
-
-# ... imports and other functions ...
-
 def update_project_goal(team_id: str, new_goal: str, user_id: str) -> dict:
     """
     อัปเดตวัตถุประสงค์ (goal) ของโครงงาน
@@ -473,8 +469,6 @@ async def get_documents_by_team_id(team_id: str):
 
         if not documents_response.data:
             return []
-            
-
 
         return documents_response.data
         
@@ -513,3 +507,93 @@ async def get_project_suggestions(team_id: str):
         print(f"Error fetching project suggestions: {e}")
         return None
     
+
+def get_project_name(team_id: str):
+    try:
+        # The `await` goes here, before the entire chain of methods.
+        response = supabase.table("project").select("topic").eq("teamid", team_id).single().execute()
+        return response.data
+    
+    except Exception as e:
+        print(f"Error fetching project name: {e}")
+        return None
+    
+async def set_project_suggestions(set_response: list, team_id: str):
+    """
+    อัปเดตหัวข้อและรายละเอียดคำแนะนำสำหรับโปรเจกต์
+    """
+    # 1. ตรวจสอบว่า list ไม่ว่างเปล่า
+    if not set_response or not isinstance(set_response, list):
+        print("Error: Invalid set_response format. Expected a non-empty list.")
+        return None
+
+    # 2. ดึง dictionary แรกจาก list
+    data_dict = set_response[0]
+
+    # 3. ตรวจสอบว่า dictionary มี 'result' key
+    if 'result' not in data_dict:
+        print("Error: 'result' key not found in the response dictionary.")
+        return None
+    
+    # 4. ดึงค่า recommendations และ additional_work
+    recommendations = data_dict['result'].get('recommendations', '')
+    additional_work = data_dict['result'].get('additional_work', '')
+    
+    # สร้าง payload สำหรับการอัปเดต
+    payload = {
+        "recommendations": recommendations,
+        "additional_work": additional_work
+    }
+    
+    print(f"Updating project for team {team_id} with data: {payload}")
+    
+    try:
+
+        response = supabase.table("project").update(payload).eq("teamid", team_id).execute()
+        
+        # ตรวจสอบว่าอัปเดตสำเร็จ
+        if response.data:
+            print("Successfully updated project suggestions.")
+            return response.data
+        else:
+            print("Update operation successful but no data was returned.")
+            return None
+
+    except Exception as e:
+        print(f"Error updating project suggestions: {e}")
+        return None
+    
+
+
+
+def get_team_profile_for_sheet(teamid: str):
+    try:
+
+        team_response = supabase.table("team").select("ajdv_pm_sheet").eq("tmid", teamid).single().execute()
+        
+        result_data = {
+            "teamid": teamid,
+            "ajdv_pm_sheet": team_response.data.get("ajdv_pm_sheet") if team_response.data else None
+        }
+
+        return result_data
+    except Exception as e:
+        print(f"Error fetching user profile for sheet: {e}")
+        return None
+    
+async def update_document(did: int, payload: dict):
+    update_data = {
+            "status": payload.get("status"),
+            "stamp_at": datetime.now().isoformat(),  # ใช้ .isoformat() เพื่อให้เป็น string ที่ถูกต้องสำหรับฐานข้อมูล
+        }
+    try:
+
+        response = supabase.table("doc").update(update_data).eq("did", did).execute()
+
+
+        return response.data
+
+    except Exception as e:
+
+        print(f"Error updating documents for document {did}: {e}")
+        return []

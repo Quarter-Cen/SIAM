@@ -26,7 +26,7 @@ const IsHaveTopicLayout = ({ children }: { children: ReactNode }) => {
       const token = localStorage.getItem('access_token');
       if (!token) {
         // Redirect ทันทีถ้าไม่มี token
-        router.push('/login');
+        router.push('/');
         return;
       }
       try {

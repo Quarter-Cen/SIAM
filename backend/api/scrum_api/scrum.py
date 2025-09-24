@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, status
-from services.supabase_service import get_projects,update_milestone,datetime,get_milestone,get_group_task, get_topic, get_project_suggestions
+from services.supabase_service import get_projects,update_milestone,datetime,get_milestone,get_group_task, get_topic, get_project_suggestions, get_project_name, set_project_suggestions
 from pydantic import BaseModel
 from fastapi_cache.decorator import cache
 import httpx
@@ -96,3 +96,42 @@ async def get_project_suggestions_api(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project suggestions not found")
     
     return data
+
+
+@router.post("/generate-suggestions/{team_id}")
+async def get_project_suggestions_api(
+    team_id: str,
+):
+
+    data =  get_project_name(team_id)
+    if not data:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project name not found")
+
+    n8n_webhook_url = "http://localhost:5678/webhook/recommendation"
+    try:
+
+        payload = data
+        
+        async with httpx.AsyncClient() as client:
+            # ส่งข้อมูลไปยัง n8n Webhook และรอรับ response กลับ
+            response = await client.post(n8n_webhook_url, json=payload, timeout=120)
+            response.raise_for_status()
+
+        # นำ JSON ที่ได้รับจาก n8n มาเป็น response body ของ FastAPI
+        n8n_response_json = response.json()
+        print(n8n_response_json)
+
+        set_response = await set_project_suggestions(n8n_response_json, team_id)
+        print(set_response)
+        return {"status": "success", "data": n8n_response_json}
+    
+    except httpx.HTTPError as e:
+        print(e)
+        raise HTTPException(
+            status_code=500, detail=f"Failed to communicate with n8n: {e}"
+        )
+    except Exception as e:
+        print(e)
+        raise HTTPException(
+            status_code=500, detail=f"An unexpected error occurred: {e}"
+        )

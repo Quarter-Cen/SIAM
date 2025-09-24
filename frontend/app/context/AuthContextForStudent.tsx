@@ -35,7 +35,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const token = localStorage.getItem('access_token');
       if (!token) {
         setLoading(false);
-        router.push('/login');
+        router.push('/');
         return;
       }
 
@@ -50,7 +50,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } catch (error) {
         console.error("Error fetching user data:", error);
         setUser(null);
-        router.push('/login');
+        router.push('/');
       } finally {
         setLoading(false);
       }
@@ -62,7 +62,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = () => {
     localStorage.removeItem('access_token');
     setUser(null);
-    router.push('/login');
+    router.push('/');
   };
 
   return (

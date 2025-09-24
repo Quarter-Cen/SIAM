@@ -25,7 +25,7 @@ export default function AuthLayout({ children, allowedRoles }: AuthLayoutProps) 
     const token = localStorage.getItem('access_token');
     
     if (!token) {
-      router.push('/login');
+      router.push('/');
       return;
     }
 
@@ -37,11 +37,11 @@ export default function AuthLayout({ children, allowedRoles }: AuthLayoutProps) 
       if (!isTokenExpired && allowedRoles.includes(userRole)) {
         setIsAuthenticated(true);
       } else {
-        router.push('/login');
+        router.push('/');
       }
     } catch (error) {
       console.error("Error decoding JWT:", error);
-      router.push('/login');
+      router.push('/');
     }
   }, [router, allowedRoles]);
 

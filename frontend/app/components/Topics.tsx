@@ -51,7 +51,7 @@ export default function Topics() {
     async function fetchUserData() {
       const token = localStorage.getItem("access_token");
       if (!token) {
-        router.push("/login");
+        router.push("/");
         return;
       }
 
@@ -66,7 +66,7 @@ export default function Topics() {
         setUserData(response.data); // <--- ตั้งค่า UserData ที่นี่
       } catch (error) {
         console.error("Error fetching user data or decoding token:", error);
-        router.push("/login");
+        router.push("/");
       }
     }
 

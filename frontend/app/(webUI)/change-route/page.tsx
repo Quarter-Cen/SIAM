@@ -5,7 +5,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { jwtDecode } from 'jwt-decode';
-
+import LoadingOverlay from '../../components/LoadingOverlay';
 interface DecodedToken {
   sub: string;
   role: 'student' | 'teacher';
@@ -21,7 +21,7 @@ export default function ChangeRoute() {
 
     // 2. ถ้าไม่มี Token หรือ Token หมดอายุ ให้กลับไปหน้า Login
     if (!token) {
-      router.push('/login');
+      router.push('/');
       return;
     }
 
@@ -34,28 +34,26 @@ export default function ChangeRoute() {
       // 4. ตรวจสอบบทบาทของผู้ใช้ (role)
       if (userRole === 'student') {
         // หากเป็น student, นำทางไปหน้า student
-        router.push('/dashboard');
+        router.push('/my-project');
       } else if (userRole === 'teacher') {
         // หากเป็น teacher, นำทางไปหน้า teacher
         router.push('/Topics');
       } else {
         // หากบทบาทไม่ถูกต้อง ให้กลับไปหน้า Login
-        router.push('/login');
+        router.push('/');
       }
 
     } catch (error) {
       console.error("Error decoding JWT:", error);
       // หากเกิดข้อผิดพลาดในการถอดรหัส Token, กลับไปหน้า Login
-      router.push('/login');
+      router.push('/');
     }
     
   }, [router]); // ระบุ router เป็น dependency เพื่อให้ useEffect ทำงานถูกต้อง
 
   return (
     <div className="flex flex-wrap justify-between gap-3 p-4">
-      <p className="text-[#111418] tracking-tight text-[32px] font-bold leading-tight min-w-72">
-        Please wait, checking your permissions...
-      </p>
+      <LoadingOverlay></LoadingOverlay>
     </div>
   );
 }

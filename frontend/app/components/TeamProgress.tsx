@@ -1,9 +1,10 @@
-"use client";
+'use client';
 
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { jwtDecode } from "jwt-decode";
+import Link from "next/link";
 
 interface DecodedToken {
   sub: string;
@@ -26,12 +27,11 @@ interface TeamCardProps {
   imageUrl: string;
 }
 
-// *** แก้ไข: TeamCard component ใช้ tmid แทน name ***
 const TeamCard: React.FC<TeamCardProps> = ({ teamid, imageUrl }) => {
   return (
-    <div className="flex h-full flex-1 flex-col gap-4 rounded-lg min-w-40">
+    <div className="flex h-full flex-1 flex-col gap-4 rounded-lg min-w-40 transition-transform duration-200 hover:scale-105">
       <div
-        className="w-full bg-center bg-no-repeat aspect-square bg-cover rounded-lg flex flex-col"
+        className="w-full bg-center bg-no-repeat aspect-square bg-cover rounded-lg flex flex-col shadow-md"
         style={{ backgroundImage: `url("${imageUrl}")` }}
       ></div>
       <div>
@@ -51,12 +51,11 @@ export default function TeamProgress() {
 
   const router = useRouter();
 
-  // --- First useEffect: Fetch User Data ---
   useEffect(() => {
     async function fetchUserData() {
       const token = localStorage.getItem("access_token");
       if (!token) {
-        router.push("/login");
+        router.push("/");
         return;
       }
       try {
@@ -68,13 +67,12 @@ export default function TeamProgress() {
         setUserData(response.data);
       } catch (error) {
         console.error("Error fetching user data or decoding token:", error);
-        router.push("/login");
+        router.push("/");
       }
     }
     fetchUserData();
   }, [router]);
 
-  // --- Second useEffect: Fetch Team Progress (depends on userData) ---
   useEffect(() => {
     if (userData) {
       const fetchTeamProgress = async () => {
@@ -101,7 +99,6 @@ export default function TeamProgress() {
     }
   }, [userData]);
 
-  // Conditional rendering
   if (loading) {
     return (
       <>
@@ -111,22 +108,6 @@ export default function TeamProgress() {
         <div className="flex overflow-y-auto [-ms-scrollbar-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <div className="p-4 text-center text-gray-500">
             <p>กำลังโหลดข้อมูล...</p>
-          </div>
-        </div>
-      </>
-    );
-  }
-
-  // Add this robust check to handle unexpected API responses
-  if (!teams) {
-    return (
-      <>
-        <h2 className="text-[#111418] text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">
-          ความคืบหน้าของกลุ่ม
-        </h2>
-        <div className="flex overflow-y-auto [-ms-scrollbar-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          <div className="p-4 text-center text-red-500">
-            <p>เกิดข้อผิดพลาดในการแสดงข้อมูลทีม หรือข้อมูลไม่ถูกต้อง</p>
           </div>
         </div>
       </>
@@ -171,11 +152,12 @@ export default function TeamProgress() {
       <div className="flex overflow-y-auto [-ms-scrollbar-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <div className="flex items-stretch p-4 gap-3">
           {teams.map((team, index) => (
-            <TeamCard
-              key={team.teamid || index}
-              teamid={team.teamid}
-              imageUrl={team.imageUrl}
-            />
+            <Link href={`/my-teams/${team.teamid}`} key={team.teamid || index} passHref>
+              <TeamCard
+                teamid={team.teamid}
+                imageUrl={team.imageUrl}
+              />
+            </Link>
           ))}
         </div>
       </div>

@@ -1,6 +1,6 @@
 
 from fastapi import APIRouter, HTTPException
-from services.supabase_service import Depends, role_required, create_token, authenticate_user, get_student_profile, get_student_team, get_teacher_profile, get_student_profile_for_sheet
+from services.supabase_service import Depends, role_required, create_token, authenticate_user, get_student_profile, get_student_team, get_teacher_profile, get_student_profile_for_sheet, get_team_profile_for_sheet
 from fastapi.security import OAuth2PasswordRequestForm
 
 router = APIRouter(
@@ -45,7 +45,14 @@ def student_team(sid: str):
     return response
 
 
-@router.get("/get-teacher-profile/{sid}")
+@router.get("/get-teacher-profile/{sid}")   
 def student_profile(sid: str):
     response = get_teacher_profile(sid)
-    return response
+    return response 
+
+
+@router.get("/get-team-profile-for-sheet/{teamid}")   
+def student_profile(teamid: str):
+    response = get_team_profile_for_sheet(teamid)
+    return response 
+

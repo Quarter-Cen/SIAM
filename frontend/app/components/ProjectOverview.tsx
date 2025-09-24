@@ -69,7 +69,7 @@ export default function ProjectOverview() {
     const token = localStorage.getItem("access_token");
     if (!token) {
       console.error("Token not found. Redirecting to login.");
-      router.push("/login");
+      router.push("/");
       return;
     }
     // -----------------------
@@ -110,7 +110,7 @@ export default function ProjectOverview() {
       const token = localStorage.getItem("access_token");
 
       if (!token) {
-        router.push("/login");
+        router.push("/");
         setLoading(false);
         return;
       }
@@ -126,7 +126,7 @@ export default function ProjectOverview() {
         setUserData(response.data);
       } catch (error) {
         console.error("Error fetching user data or decoding token:", error);
-        router.push("/login");
+        router.push("/");
         setError("Failed to authenticate. Please log in again.");
       } finally {
         setLoading(true);

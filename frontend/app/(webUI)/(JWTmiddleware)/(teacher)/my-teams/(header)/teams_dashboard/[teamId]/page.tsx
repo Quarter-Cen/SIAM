@@ -2,11 +2,10 @@
 
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { jwtDecode } from "jwt-decode";
 import DashboardSection from "@/app/components/DashboardSection";
 import ProgressCard from "@/app/components/ProgressCard";
 import DailyBarChart from "@/app/components/DailyBarChart";
-import DailyLineChart from "@/app/components/DailyLineChart";
+import { useParams } from "next/navigation";
 
 // Interfaces สำหรับ API
 interface OverallSummary {
@@ -36,113 +35,61 @@ interface DailyData {
   tasksDone: number;
 }
 
-interface DashboardResponse {
-  data: {
-    overall_summary: OverallSummary;
-    performance_by_person: PerformanceByPerson[];
-  };
-  daily_completion: DailyData[]; // เพิ่มส่วนนี้เพื่อให้โครงสร้างถูกต้อง
-}
-
-// Interfaces ที่เกี่ยวข้องกับ User
-interface DecodedToken {
-  sub: string;
-  role: "student" | "teacher";
-  exp: number;
-}
 
 interface UserData {
-  sid: string;
-  name: string;
   teamid: string;
   ajdv_pm_sheet: string;
 }
 
+
+
 export default function DashboardPage() {
-  const [overallSummary, setOverallSummary] = useState<OverallSummary | null>(
-    null
-  );
+  const { teamId } = useParams<{ teamId: string }>();  // ✅ ใช้ตรงนี้
+
+  const [overallSummary, setOverallSummary] = useState<OverallSummary | null>(null);
   const [dailyData, setDailyData] = useState<DailyData[] | null>(null);
-  const [performanceData, setPerformanceData] = useState<
-    PerformanceByPerson[] | null
-  >(null);
+  const [performanceData, setPerformanceData] = useState<PerformanceByPerson[] | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [suggestion, setSuggestion] = useState<string | null>(null);
   const [addjust, setAddjust] = useState<string | null>(null);
 
-  const handleGenerateSuggestion = async () => {
-    const token = localStorage.getItem("access_token");
-    if (!token) {
-      alert("ไม่พบการยืนยันตัวตน");
+  useEffect(() => {
+    if (!teamId) {
+      setError("ไม่พบ Team ID");
+      setLoading(false);
       return;
     }
-    // Optional: แสดงสถานะโหลดระหว่างที่รอ API response
-    setSuggestion("กำลังสร้างคำแนะนำ...");
-    setAddjust("กำลังสร้างคำแนะนำ...");
 
-    try {
-      const decoded: DecodedToken = jwtDecode(token);
-      const userId = decoded.sub;
-
-      const userResponse = await axios.get<UserData>(
-        `http://127.0.0.1:8000/permission/get-student-profile-for-sheet/${userId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      const teamId = userResponse.data.teamid; // ใช้ teamid ที่ถูกต้อง
-
-      // เรียก API Back-end ที่เชื่อมกับ N8N
-      const response = await axios.post(
-        `http://127.0.0.1:8000/api/scrum/generate-suggestions/${teamId}`,
-        {}
-      );
-
-      // อัปเดต state ด้วยข้อมูลใหม่จาก response
-      setSuggestion(response.data.recommendations);
-      setAddjust(response.data.additional_work);
-
-      alert("สร้างคำแนะนำเรียบร้อยแล้ว!");
-    } catch (error) {
-      console.error("Failed to generate suggestions:", error);
-      setSuggestion("ไม่สามารถสร้างคำแนะนำได้");
-      setAddjust("ไม่สามารถสร้างคำแนะนำได้");
-      alert("เกิดข้อผิดพลาดในการสร้างคำแนะนำ");
-    }
-  };
-  useEffect(() => {
     const fetchDashboardData = async () => {
       const token = localStorage.getItem("access_token");
       if (!token) {
-        setLoading(false);
         setError("ไม่พบการยืนยันตัวตน กรุณาเข้าสู่ระบบใหม่");
+        setLoading(false);
         return;
       }
 
       try {
-        const decoded: DecodedToken = jwtDecode(token);
-        const userId = decoded.sub;
-
         // ขั้นตอนที่ 1: ดึง teamid ของผู้ใช้
         const userResponse = await axios.get<UserData>(
-          `http://127.0.0.1:8000/permission/get-student-profile-for-sheet/${userId}`,
+          `http://127.0.0.1:8000/permission/get-team-profile-for-sheet/${teamId}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
-        const teamId = userResponse.data.ajdv_pm_sheet;
+        const sheetTeamId = userResponse.data.ajdv_pm_sheet;
 
         // ขั้นตอนที่ 2: ดึงข้อมูล Dashboard จาก teamId ที่ได้มา
         const dashboardResponse = await axios.get<any>(
-          `http://127.0.0.1:8000/api/scrum/stat/${teamId}`,
+          `http://127.0.0.1:8000/api/scrum/stat/${sheetTeamId}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
 
         const apiData = dashboardResponse.data.data;
         const defaultTeamId = userResponse.data.teamid;
+
         const suggestionsResponse = await axios.get<any>(
           `http://127.0.0.1:8000/api/scrum/suggestions/${defaultTeamId}`
         );
 
-        console.log(suggestionsResponse);
         if (apiData && apiData.length > 0) {
           const summary = apiData[0].data.overall_summary;
           const daily = apiData
@@ -170,12 +117,11 @@ export default function DashboardPage() {
     };
 
     fetchDashboardData();
-  }, []);
-
+  }, [teamId]);
   // ส่วนของการแสดงผลการโหลด
   if (loading) {
     return (
-      <div className="px-40 flex flex-1 justify-center py-5">
+      <div className="px-4 flex flex-1 justify-center py-5">
         <div className="layout-content-container flex flex-col max-w-[960px] flex-1">
           <div className="flex flex-col gap-4 p-4 animate-pulse">
             <div className="bg-gray-200 h-8 w-60 rounded-md" />
@@ -324,15 +270,6 @@ export default function DashboardPage() {
                 <p className="text-[#121416] tracking-light font-medium leading-tight pt-1">
                   {addjust}
                 </p>
-                {/* Conditional Rendering: ซ่อนปุ่มเมื่อมีค่า suggestion */}
-                {!suggestion && (
-                  <button
-                    onClick={handleGenerateSuggestion}
-                    className="bg-[#121416] text-white py-4 px-4 rounded-md hover:bg-gray-800 transition-colors duration-200 mt-4"
-                  >
-                    สร้างคำแนะนำ
-                  </button>
-                )}
               </div>
             </div>
           </DashboardSection>

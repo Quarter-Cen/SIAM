@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Depends
-from services.supabase_service import get_documents_by_team_id, get_current_user, is_user_member_of_team
+from services.supabase_service import get_documents_by_team_id, update_document
 from fastapi import APIRouter, Depends, HTTPException, status
 
 
@@ -22,3 +22,11 @@ async def get_team_documents(
     
     return documents
         
+
+@router.patch("/{docId}")
+async def update_document_status(
+    docId: int, payload : dict
+):
+    response = await update_document(docId,payload)
+    
+    return response
