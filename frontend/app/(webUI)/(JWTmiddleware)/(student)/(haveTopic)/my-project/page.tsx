@@ -3,7 +3,7 @@
 
 import ProjectOverview from '@/app/components/ProjectOverview';
 import RecentDocuments from '@/app/components/RecentDocuments';
-import ProjectMilestones from '@/app/components/ProjectMilestones';
+import ProjectMilestones from '@/app/components/ProjectMilestonesforStudent';
 
 export default function ProjectPage() {
   return (

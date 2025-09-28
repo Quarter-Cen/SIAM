@@ -62,7 +62,7 @@ export default function TeamProgress() {
         const decoded: DecodedToken = jwtDecode(token);
         const userID = decoded.sub;
         const response = await axios.get<UserData>(
-          `http://127.0.0.1:8000/permission/get-teacher-profile/${userID}`
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/permission/get-teacher-profile/${userID}`
         );
         setUserData(response.data);
       } catch (error) {
@@ -78,7 +78,7 @@ export default function TeamProgress() {
       const fetchTeamProgress = async () => {
         try {
           const response = await axios.get<Team[]>(
-            `http://127.0.0.1:8000/api/topics/team-progress/${userData.tid}`
+            `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/topics/team-progress/${userData.tid}`
           );
           const teamsWithImages = response.data.map((team) => ({
             ...team,

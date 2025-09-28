@@ -6,7 +6,7 @@ from fastapi.security import HTTPBearer
 from fastapi import Depends, HTTPException, status, APIRouter
 from datetime import datetime, timedelta
 from typing import Optional
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from model import MilestoneData
 
 load_dotenv()
@@ -157,30 +157,33 @@ def get_projects():
     response = supabase.table("student").select("*").execute()
     return response.data
 
+def update_milestone(pjid: int, update_dict: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    """
+    อัปเดตเฉพาะ Field ที่ระบุสำหรับ Project Milestone ID (pmid) ที่กำหนดใน Supabase
+    """
+    try:
+        response = (
+            supabase.table('project_milestone')
 
-def update_milestone(
-    milestone_id: int,
-    proposal: datetime,
-    proposal_slide: datetime,
-    final_slide_project: datetime,
-    research_doc: datetime
-):
-    data = {
-        "proposal": proposal.isoformat(),
-        "proposal_slide": proposal_slide.isoformat(),
-        "final_slide_project": final_slide_project.isoformat(),
-        "research_doc": research_doc.isoformat()
-    }
+            .update(update_dict) 
+            .eq('pmid', pjid) 
+            .execute()
+        )
+        
+        updated_data = response.data
 
-    response = (
-        supabase
-        .table("project_milestone")
-        .update(data)
-        .eq("pmid", milestone_id) 
-        .execute()
-    )
-    return response.data
-
+        # 🛑 แก้ไข: ถ้าอัปเดตสำเร็จ (response.data ไม่ว่าง) ให้คืนค่าข้อมูลที่อัปเดตแล้ว
+        if updated_data:
+            # Supabase จะคืนค่าเป็น List of Dicts เราจึงคืนค่า Dict แรก
+            return updated_data[0] 
+        
+        # ถ้าอัปเดตแล้วแต่ Supabase คืนค่าว่าง (เช่น ไม่พบ pmid นั้น)
+        return None 
+    
+    except Exception as e:
+        # การจัดการข้อผิดพลาด เช่น DB Connection Error หรือ Invalid Data
+        print(f"Supabase UPDATE error: {e}")
+        return None
 def get_milestone():
     response = supabase.table("project_milestone").select("*").execute()
     return response.data
@@ -597,3 +600,5 @@ async def update_document(did: int, payload: dict):
 
         print(f"Error updating documents for document {did}: {e}")
         return []
+    
+

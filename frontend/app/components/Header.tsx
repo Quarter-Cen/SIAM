@@ -54,7 +54,7 @@ const Header = () => {
 
         // Fetch user data from your FastAPI backend
         const response = await axios.get<UserData>(
-          `http://127.0.0.1:8000/permission/get-student-profile/${userID}`
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/permission/get-student-profile/${userID}`
         );
 
         // Update state with the fetched data

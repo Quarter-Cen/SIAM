@@ -60,7 +60,7 @@ export default function Topics() {
         const userID = decoded.sub;
 
         const response = await axios.get<UserData>(
-          `http://127.0.0.1:8000/permission/get-teacher-profile/${userID}`
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/permission/get-teacher-profile/${userID}`
         );
 
         setUserData(response.data); // <--- ตั้งค่า UserData ที่นี่
@@ -80,7 +80,7 @@ export default function Topics() {
         try {
           // ใช้ userData.tid ที่มั่นใจว่ามีค่าแล้ว
           const response = await axios.get<Topic[]>(
-            `http://127.0.0.1:8000/api/scrum/topic/${userData.tid}`,
+            `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/scrum/topic/${userData.tid}`,
             {
               headers: {
                 "Cache-Control": "no-cache",
@@ -143,7 +143,7 @@ export default function Topics() {
     try {
       // ใช้ tpid จาก topicToProcess
       const response = await axios.put(
-        `http://127.0.0.1:8000/api/topics/action/${topicToProcess.tpid}`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/topics/action/${topicToProcess.tpid}`,
         requestBody
       );
 
@@ -248,7 +248,7 @@ export default function Topics() {
                   <th className="px-4 py-3 text-left text-[#111418] w-40 text-sm font-medium leading-normal">
                     สถานะ
                   </th>
-                  <th className="px-4 py-3 text-left text-[#111418] w-60 text-[#60758a] text-sm font-medium leading-normal">
+                  <th className="px-4 py-3 text-left text-[#111418] w-60 text-sm font-medium leading-normal">
                     การตอบรับ
                   </th>
                 </tr>
@@ -336,7 +336,7 @@ export default function Topics() {
                 <th className="px-4 py-3 text-left text-[#111418] w-40 text-sm font-medium leading-normal">
                   สถานะ
                 </th>
-                <th className="px-4 py-3 text-left text-[#111418] w-60 text-[#60758a] text-sm font-medium leading-normal">
+                <th className="px-4 py-3 text-left text-[#111418] w-60 text-sm font-medium leading-normal">
                   การตอบรับ
                 </th>
               </tr>

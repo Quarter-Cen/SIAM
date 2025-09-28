@@ -98,7 +98,7 @@ export default function RecentDocuments() {
         const userId = decoded.sub;
 
         const userResponse = await axios.get<UserData>(
-          `http://127.0.0.1:8000/permission/get-student-profile/${userId}`,
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/permission/get-student-profile/${userId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -108,7 +108,7 @@ export default function RecentDocuments() {
         const teamId = userResponse.data.teamid;
 
         const docsResponse = await axios.get<Document[]>(
-          `http://127.0.0.1:8000/api/documents/${teamId}`,
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/documents/${teamId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

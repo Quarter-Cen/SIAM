@@ -24,12 +24,43 @@ class CheckTopic(BaseModel):
     advisor_name: Optional[str] = None
     academic_year: Optional[str] = None
 
-@router.post("/check")
-async def check_topic(item: CheckTopic):
+@router.post("/check-first-ai")
+async def check_topic_first_ai(item: CheckTopic):
     """
     Endpoint สำหรับตรวจสอบหัวข้อโครงงานเบื้องต้น
     """
-    n8n_webhook_url = "http://localhost:5678/webhook-test/fda09353-7aa0-49c1-b4aa-e108dc7173df"
+    n8n_webhook_url = "http://localhost:5678/webhook/model-a-url"
+
+    try:
+        payload = item.dict()
+        
+        async with httpx.AsyncClient() as client:
+            # ส่งข้อมูลไปยัง n8n Webhook และรอรับ response กลับ
+            response = await client.post(n8n_webhook_url, json=payload, timeout=60)
+            response.raise_for_status()
+
+        # นำ JSON ที่ได้รับจาก n8n มาเป็น response body ของ FastAPI
+        n8n_response_json = response.json()
+        print(n8n_response_json)
+        return {"status": "success", "data": n8n_response_json}
+    
+    except httpx.HTTPError as e:
+        print(e)
+        raise HTTPException(
+            status_code=500, detail=f"Failed to communicate with n8n: {e}"
+        )
+    except Exception as e:
+        print(e)
+        raise HTTPException(
+            status_code=500, detail=f"An unexpected error occurred: {e}"
+        )
+    
+@router.post("/check-secound-ai")
+async def check_topic_secound_ai(item: CheckTopic):
+    """
+    Endpoint สำหรับตรวจสอบหัวข้อโครงงานเบื้องต้น
+    """
+    n8n_webhook_url = "http://localhost:5678/webhook/model-b-url"
 
     try:
         payload = item.dict()

@@ -43,7 +43,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const userID = decoded.sub;
 
         const response = await axios.get<UserData>(
-          `http://127.0.0.1:8000/permission/get-teacher-profile/${userID}`
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/permission/get-teacher-profile/${userID}`
         );
         setUser(response.data);
       } catch (error) {

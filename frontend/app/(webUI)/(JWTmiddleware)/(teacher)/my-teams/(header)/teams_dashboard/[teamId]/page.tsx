@@ -72,14 +72,14 @@ export default function DashboardPage() {
       try {
         // ขั้นตอนที่ 1: ดึง teamid ของผู้ใช้
         const userResponse = await axios.get<UserData>(
-          `http://127.0.0.1:8000/permission/get-team-profile-for-sheet/${teamId}`,
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/permission/get-team-profile-for-sheet/${teamId}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         const sheetTeamId = userResponse.data.ajdv_pm_sheet;
 
         // ขั้นตอนที่ 2: ดึงข้อมูล Dashboard จาก teamId ที่ได้มา
         const dashboardResponse = await axios.get<any>(
-          `http://127.0.0.1:8000/api/scrum/stat/${sheetTeamId}`,
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/scrum/stat/${sheetTeamId}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
 
@@ -87,7 +87,7 @@ export default function DashboardPage() {
         const defaultTeamId = userResponse.data.teamid;
 
         const suggestionsResponse = await axios.get<any>(
-          `http://127.0.0.1:8000/api/scrum/suggestions/${defaultTeamId}`
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/scrum/suggestions/${defaultTeamId}`
         );
 
         if (apiData && apiData.length > 0) {

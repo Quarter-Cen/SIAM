@@ -20,7 +20,7 @@ const LoginForm: React.FC = () => {
 
     try {
       const response = await axios.post(
-        'http://127.0.0.1:8000/permission/login',
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/permission/login`,
         new URLSearchParams({
           username: username,
           password: password,
@@ -34,7 +34,7 @@ const LoginForm: React.FC = () => {
 
       const { access_token } = response.data;
       localStorage.setItem('access_token', access_token);
-      router.push('/change-route'); // เปลี่ยนเส้นทางเมื่อเข้าสู่ระบบสำเร็จ
+      router.push('/change-route'); 
     } catch (err) {
       if (axios.isAxiosError(err) && err.response) {
         setError(err.response.data.detail);

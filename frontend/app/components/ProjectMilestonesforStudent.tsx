@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { jwtDecode } from "jwt-decode";
+
 import { FileDoc, Pencil, Code, Presentation, X } from '@phosphor-icons/react';
 
 // Interfaces
@@ -71,11 +71,7 @@ export default function ProjectMilestones() {
   const [error, setError] = useState<string | null>(null);
   const [pjid, setPjid] = useState<number | null>(null); 
 
-  // States for Edit Modal
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [editingMilestone, setEditingMilestone] = useState<EditableMilestone | null>(null);
-  const [newDate, setNewDate] = useState<string>('');
-  const [updateLoading, setUpdateLoading] = useState<boolean>(false);
+
 
   // 🎯 MODIFIED: fetchMilestones Function 🎯
   const fetchMilestones = async () => {
@@ -119,68 +115,6 @@ export default function ProjectMilestones() {
       }
     } finally {
       setLoading(false);
-    }
-  };
-
-
-  const handleEditClick = (milestone: Milestone, fieldName: string, pjid: number) => {
-    
-    let isoDate: string = '';
-    if (milestone.date && milestone.date !== '-') {
-      try {
-        const dateObj = new Date(milestone.date);
-        const yyyy = dateObj.getFullYear();
-        const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
-        const dd = String(dateObj.getDate()).padStart(2, '0');
-        const hh = String(dateObj.getHours()).padStart(2, '0');
-        const mi = String(dateObj.getMinutes()).padStart(2, '0');
-        isoDate = `${yyyy}-${mm}-${dd}T${hh}:${mi}`;
-      } catch (e) {
-        isoDate = ''; 
-      }
-    }
-    
-    setEditingMilestone({
-      pjid,
-      fieldName,
-      currentDate: milestone.date,
-      name: milestone.name,
-    });
-    setNewDate(isoDate); 
-    setIsModalOpen(true);
-  };
-
-  const handleUpdateSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editingMilestone || !newDate) return;
-    
-    setUpdateLoading(true);
-    const token = localStorage.getItem("access_token");
-    
-    const isoString = new Date(newDate).toISOString(); 
-
-    const body = {
-      pjid: editingMilestone.pjid,
-      [editingMilestone.fieldName]: isoString, 
-    };
-    console.log(body)
-    try {
-      const response = await axios.patch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/scrum/milestones/update/`, 
-        body,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      
-      if (response.status === 200) {
-        alert("อัปเดต Milestone สำเร็จ!");
-        setIsModalOpen(false);
-        await fetchMilestones(); 
-      }
-    } catch (err) {
-      console.error("Failed to update milestone:", err);
-      alert("อัปเดตไม่สำเร็จ: กรุณาตรวจสอบสิทธิ์หรือข้อมูลที่ป้อน");
-    } finally {
-      setUpdateLoading(false);
     }
   };
 
@@ -240,15 +174,6 @@ export default function ProjectMilestones() {
               <div className="flex flex-1 flex-col py-3">
                 <div className="flex items-start">
                   <p className="text-[#111418] text-base font-medium leading-normal">{milestone.name}</p>
-                  {pjid !== null && ( 
-                    <button 
-                      onClick={() => handleEditClick(milestone, fieldName, pjid)}
-                      className="text-[#0c7ff2] hover:text-[#0a66c2] transition-colors p-1 rounded cursor-pointer"
-                      type="button"
-                    >
-                      <Pencil size={18} />
-                    </button>
-                  )}
                 </div>
                 <p className="text-[#60758a] text-base font-normal leading-normal">{milestone.date}</p>
               </div>
@@ -256,55 +181,6 @@ export default function ProjectMilestones() {
           );
         })}
       </div>
-
-      {isModalOpen && editingMilestone && (
-        <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 relative">
-            
-            <button 
-                onClick={() => setIsModalOpen(false)}
-                className="absolute top-4 right-4 text-gray-400 hover:text-gray-700"
-                type="button"
-            >
-                <X size={24} />
-            </button>
-            
-            <h4 className="text-xl font-bold mb-4 text-[#111418]">แก้ไข: {editingMilestone.name}</h4>
-            <p className="text-sm text-gray-600 mb-4">วันที่ปัจจุบัน: <span className="font-semibold">{editingMilestone.currentDate}</span></p>
-
-            <form onSubmit={handleUpdateSubmit}>
-              <label className="block mb-4">
-                <p className="text-[#111418] text-base font-medium leading-normal pb-2">เลือกวันที่และเวลาใหม่</p>
-                <input
-                  type="datetime-local"
-                  value={newDate}
-                  onChange={(e) => setNewDate(e.target.value)}
-                  required
-                  className="w-full p-3 border border-gray-300 rounded-lg text-[#111418] bg-[#f0f2f5] focus:ring-2 focus:ring-[#0c7ff2] focus:border-transparent"
-                />
-              </label>
-
-              <div className="flex justify-end space-x-3 mt-6">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 text-sm font-semibold rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
-                  disabled={updateLoading}
-                >
-                  ยกเลิก
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 text-sm font-bold rounded-lg bg-[#0c7ff2] text-white hover:bg-[#0a66c2] transition-colors"
-                  disabled={updateLoading || !newDate}
-                >
-                  {updateLoading ? 'กำลังบันทึก...' : 'บันทึกการแก้ไข'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </>
   );
 }

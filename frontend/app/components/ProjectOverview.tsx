@@ -76,7 +76,7 @@ export default function ProjectOverview() {
 
     try {
       await axios.patch(
-        `http://127.0.0.1:8000/api/topics/overview/${userData.teamid}/goal`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/topics/overview/${userData.teamid}/goal`,
         { goal: editableGoal }, // ส่งข้อมูลใหม่ไปใน body
         {
           // --- เพิ่มโค้ดส่วนนี้ ---
@@ -120,7 +120,7 @@ export default function ProjectOverview() {
         const userID = decoded.sub;
 
         const response = await axios.get<UserData>(
-          `http://127.0.0.1:8000/permission/get-student-profile/${userID}`
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/permission/get-student-profile/${userID}`
         );
 
         setUserData(response.data);
@@ -144,7 +144,7 @@ export default function ProjectOverview() {
         try {
           // Now we can safely access userData.teamid
           const response = await axios.get<ProjectData>(
-            `http://127.0.0.1:8000/api/topics/overview/${userData.teamid}`
+            `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/topics/overview/${userData.teamid}`
           );
           setProjectData(response.data);
           setError(null);

@@ -34,12 +34,12 @@ const IsHaveTopicLayout = ({ children }: { children: ReactNode }) => {
         const userID = decoded.sub; 
 
         const userResponse = await axios.get<UserData>(
-          `http://127.0.0.1:8000/permission/get-student-profile/${userID}`
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/permission/get-student-profile/${userID}`
         );
         const teamID = userResponse.data.teamid;
         
         const topicResponse = await axios.get<boolean>(
-          `http://127.0.0.1:8000/api/topics/check-topic-for-team/${teamID}`
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/topics/check-topic-for-team/${teamID}`
         );
         const hasTopic = topicResponse.data;
         

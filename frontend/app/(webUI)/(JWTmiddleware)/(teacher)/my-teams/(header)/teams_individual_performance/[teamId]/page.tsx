@@ -59,14 +59,14 @@ const IndividualPerformance: React.FC = () => {
       try {
         // Step 1: Fetch user's profile to get teamid
         const userResponse = await axios.get<UserData>(
-          `http://127.0.0.1:8000/permission/get-team-profile-for-sheet/${teamId}`,
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/permission/get-team-profile-for-sheet/${teamId}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         const sheetTeamId = userResponse.data.ajdv_pm_sheet;
 
         // Step 2: Fetch dashboard data using teamid
         const dashboardResponse = await axios.get<any>(
-          `http://127.0.0.1:8000/api/scrum/stat/${sheetTeamId}`,
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/scrum/stat/${sheetTeamId}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
 

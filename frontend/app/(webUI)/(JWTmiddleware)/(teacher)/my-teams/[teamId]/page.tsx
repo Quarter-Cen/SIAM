@@ -2,6 +2,7 @@
 
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import ProjectMilestones from "@/app/components/ProjectMilestones"
 import axios from "axios";
 // import { jwtDecode } from "jwt-decode"; // Removed due to compilation error
 import Link from "next/link";
@@ -154,7 +155,7 @@ const ProjectOverview = ({ teamId }: { teamId: string }) => {
     const fetchProjectData = async () => {
       try {
         const response = await axios.get<ProjectData>(
-          `http://127.0.0.1:8000/api/topics/overview/${teamId}`
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/topics/overview/${teamId}`
         );
         console.log(response.data);
         setProjectData(response.data);
@@ -430,120 +431,7 @@ const RecentDocuments = ({ teamId }: { teamId: string }) => {
   );
 };  
 
-// Component สำหรับแสดง Milestones
-const ProjectMilestones = () => {
-  const [milestones, setMilestones] = useState<Milestone[] | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchMilestones = async () => {
-      const token = localStorage.getItem("access_token");
-      if (!token) {
-        setLoading(false);
-        setError("กรุณาเข้าสู่ระบบ");
-        return;
-      }
-      try {
-        const milestonesResponse = await axios.get<MilestoneData[]>(
-          `http://127.0.0.1:8000/api/scrum/milestone`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-
-        const data = milestonesResponse.data[0];
-        console.log(data);
-        if (data) {
-          const transformedMilestones: Milestone[] = [
-            {
-              name: "Project Proposal Submission",
-              date: formatThaiDate(data.proposal),
-              icon: <FileDoc size={24} />,
-            },
-            {
-              name: "Research Document Submission",
-              date: formatThaiDate(data.research_doc),
-              icon: <Pencil size={24} />,
-            },
-            {
-              name: "Proposal Slide Presentation",
-              date: formatThaiDate(data.proposal_slide),
-              icon: <Code size={24} />,
-            },
-            {
-              name: "Final Project Presentation",
-              date: formatThaiDate(data.final_slide_project),
-              icon: <Presentation size={24} />,
-            },
-          ];
-          setMilestones(transformedMilestones);
-        } else {
-          setMilestones([]);
-        }
-      } catch (err) {
-        setError("ไม่สามารถดึงข้อมูล Milestones ได้");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchMilestones();
-  }, []);
-
-  if (loading) {
-    return (
-      <div className="p-4">
-        <h3 className="text-[#111418] text-lg font-bold leading-tight tracking-[-0.015em] pb-2 pt-4">
-          Project Milestones
-        </h3>
-        <div className="flex flex-col gap-4">
-          <div className="bg-gray-200 rounded-md h-12 w-full animate-pulse" />
-          <div className="bg-gray-200 rounded-md h-12 w-full animate-pulse" />
-        </div>
-      </div>
-    );
-  }
-  if (error) {
-    return (
-      <div className="p-4 text-center text-red-500">
-        <p>{error}</p>
-      </div>
-    );
-  }
-  if (!milestones || milestones.length === 0) {
-    return (
-      <div className="p-4 text-center text-gray-500">
-        <p>ไม่พบข้อมูล Milestones</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="p-4">
-      <h3 className="text-[#111418] text-lg font-bold leading-tight tracking-[-0.015em] px-4 pb-2 pt-4">
-        Project Milestones
-      </h3>
-      <div className="grid grid-cols-[40px_1fr] gap-x-2 px-4">
-        {milestones.map((milestone, index) => (
-          <div key={index} className="contents">
-            <div className="flex flex-col items-center gap-1 pt-3">
-              <div className="text-[#111418]">{milestone.icon}</div>
-              {index < milestones.length - 1 && (
-                <div className="w-[1.5px] bg-[#dbe0e6] h-2 grow" />
-              )}
-            </div>
-            <div className="flex flex-1 flex-col py-3">
-              <p className="text-[#111418] text-base font-medium leading-normal">
-                {milestone.name}
-              </p>
-              <p className="text-[#60758a] text-base font-normal leading-normal">
-                {milestone.date}
-              </p>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
 
 // ----------------------------------------------------
 // Main Application Component

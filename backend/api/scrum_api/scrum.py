@@ -1,8 +1,10 @@
+import pytz 
 from fastapi import APIRouter, HTTPException, status
-from services.supabase_service import get_projects,update_milestone,datetime,get_milestone,get_group_task, get_topic, get_project_suggestions, get_project_name, set_project_suggestions
-from pydantic import BaseModel
+from services.supabase_service import datetime, get_projects,update_milestone,get_milestone,get_group_task, get_topic, get_project_suggestions, get_project_name, set_project_suggestions
+
 from fastapi_cache.decorator import cache
 import httpx
+from model import MilestoneUpdate, MilestoneData
 
 router = APIRouter(
     prefix="/api/scrum", # กำหนด prefix สำหรับทุก endpoints ใน router นี้
@@ -14,23 +16,6 @@ async def testgetfn():
     result = get_projects()
     return result
 
-
-class MilestoneUpdate(BaseModel):
-    proposal: datetime
-    proposal_slide: datetime
-    final_slide_project: datetime
-    research_doc: datetime
-
-@router.put("/milestone")
-async def update_milestone_api(payload: MilestoneUpdate):
-    result = update_milestone(
-        1,
-        proposal=payload.proposal,
-        proposal_slide=payload.proposal_slide,
-        final_slide_project=payload.final_slide_project,
-        research_doc=payload.research_doc
-    )
-    return {"updated": result}
 
 @router.get("/milestone")
 async def getmilestone():
@@ -134,4 +119,47 @@ async def get_project_suggestions_api(
         print(e)
         raise HTTPException(
             status_code=500, detail=f"An unexpected error occurred: {e}"
+        )
+    
+
+@router.patch("/milestones/update/", response_model=MilestoneData)
+async def update_project_milestones(update_data: MilestoneUpdate):
+    """
+    อัปเดตวันที่/เวลาของ Milestones เฉพาะ Field ที่ระบุ (ใช้ PATCH Logic)
+    """
+    # 1. เตรียมข้อมูลสำหรับอัปเดต: ลบ Field ที่เป็น None ออก และเอา pmid ออก
+    update_dict = update_data.model_dump(exclude_none=True)
+    pmid_to_update = update_dict.pop('pjid') 
+    
+    if not update_dict:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="No fields provided for update."
+        )
+    for key, value in update_dict.items():
+            if isinstance(value, str):
+                # 1. แปลง String YYYY-MM-DDTHH:mm เป็น Aware Datetime (Logic เดิม)
+                naive_dt = datetime.fromisoformat(value)
+                aware_dt = naive_dt.replace(tzinfo=pytz.timezone('UTC')) 
+                
+                # 2. 🛑 แก้ไข: แปลง Aware Datetime Object กลับเป็น ISO String
+                update_dict[key] = aware_dt.isoformat() # 🎯 ใช้ .isoformat() 🎯
+    try:
+        # 2. เรียก Service Layer เพื่อทำการอัปเดตใน Supabase
+        updated_data = update_milestone(pmid_to_update, update_dict)
+        
+        if not updated_data:
+            # อาจเกิดขึ้นถ้า pmid ไม่ถูกต้อง หรืออัปเดตไม่สำเร็จ
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Milestone ID {pmid_to_update} not found or update failed."
+            )
+        
+        return updated_data
+        
+    except Exception as e:
+        print(f"Update error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to update milestone due to server error."
         )

@@ -37,12 +37,22 @@ class GoalUpdateRequest(BaseModel):
 
 class MilestoneData(BaseModel):
     # Field ที่มาจาก database
-    id: int = Field(alias='pmid')
-    proposal: Optional[datetime] = None
-    research_doc: Optional[datetime] = None
-    proposal_slide: Optional[datetime] = None
-    final_slide_project: Optional[datetime] = None
+    pmid: int = Field(alias='pmid')
+    proposal: Optional[str] = None
+    research_doc: Optional[str] = None
+    proposal_slide: Optional[str] = None
+    final_slide_project: Optional[str] = None
 
     class Config:
         from_attributes = True
-        populate_by_name = True # ช่วยให้ Pydantic ใช้ชื่อ alias ในการสร้าง Object ได้
+
+
+
+class MilestoneUpdate(BaseModel):
+    pjid: int = Field(..., description="Project Milestone ID ที่ต้องการอัปเดต")
+    
+    # ทุก Field เป็น Optional เพื่อรองรับการ PATCH
+    proposal: Optional[str] = None
+    research_doc: Optional[str] = None
+    proposal_slide: Optional[str] = None
+    final_slide_project: Optional[str] = None

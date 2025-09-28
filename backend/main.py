@@ -17,9 +17,11 @@ import os
 
 load_dotenv()
 app = FastAPI()
+frontend_origin = os.getenv("FRONTEND_ORIGIN", "http://localhost:3000")
 
 # ตั้งค่า CORS Middleware
 origins = [
+    frontend_origin,
     "http://localhost:3000",  # URL ของ Next.js Frontend
     "http://127.0.0.1:3000",
 ]

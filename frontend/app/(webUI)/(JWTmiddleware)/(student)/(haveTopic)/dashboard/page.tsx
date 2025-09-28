@@ -6,7 +6,6 @@ import { jwtDecode } from "jwt-decode";
 import DashboardSection from "@/app/components/DashboardSection";
 import ProgressCard from "@/app/components/ProgressCard";
 import DailyBarChart from "@/app/components/DailyBarChart";
-import DailyLineChart from "@/app/components/DailyLineChart";
 
 // Interfaces สำหรับ API
 interface OverallSummary {
@@ -34,14 +33,6 @@ interface PerformanceByPerson {
 interface DailyData {
   day: string;
   tasksDone: number;
-}
-
-interface DashboardResponse {
-  data: {
-    overall_summary: OverallSummary;
-    performance_by_person: PerformanceByPerson[];
-  };
-  daily_completion: DailyData[]; // เพิ่มส่วนนี้เพื่อให้โครงสร้างถูกต้อง
 }
 
 // Interfaces ที่เกี่ยวข้องกับ User
@@ -86,7 +77,7 @@ export default function DashboardPage() {
       const userId = decoded.sub;
 
       const userResponse = await axios.get<UserData>(
-        `http://127.0.0.1:8000/permission/get-student-profile-for-sheet/${userId}`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/permission/get-student-profile-for-sheet/${userId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -94,7 +85,7 @@ export default function DashboardPage() {
 
       // เรียก API Back-end ที่เชื่อมกับ N8N
       const response = await axios.post(
-        `http://127.0.0.1:8000/api/scrum/generate-suggestions/${teamId}`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/scrum/generate-suggestions/${teamId}`,
         {}
       );
 
@@ -125,21 +116,21 @@ export default function DashboardPage() {
 
         // ขั้นตอนที่ 1: ดึง teamid ของผู้ใช้
         const userResponse = await axios.get<UserData>(
-          `http://127.0.0.1:8000/permission/get-student-profile-for-sheet/${userId}`,
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/permission/get-student-profile-for-sheet/${userId}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         const teamId = userResponse.data.ajdv_pm_sheet;
 
         // ขั้นตอนที่ 2: ดึงข้อมูล Dashboard จาก teamId ที่ได้มา
         const dashboardResponse = await axios.get<any>(
-          `http://127.0.0.1:8000/api/scrum/stat/${teamId}`,
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/scrum/stat/${teamId}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
 
         const apiData = dashboardResponse.data.data;
         const defaultTeamId = userResponse.data.teamid;
         const suggestionsResponse = await axios.get<any>(
-          `http://127.0.0.1:8000/api/scrum/suggestions/${defaultTeamId}`
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/scrum/suggestions/${defaultTeamId}`
         );
 
         console.log(suggestionsResponse);
