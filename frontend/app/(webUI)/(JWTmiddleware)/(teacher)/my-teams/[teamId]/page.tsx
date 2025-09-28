@@ -270,7 +270,7 @@ const RecentDocuments = ({ teamId }: { teamId: string }) => {
 
     try {
       const docsResponse = await axios.get<Document[]>(
-        `http://127.0.0.1:8000/api/documents/${teamId}`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/documents/${teamId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -313,7 +313,7 @@ const RecentDocuments = ({ teamId }: { teamId: string }) => {
 
     try {
       await axios.patch<Document>(
-        `http://127.0.0.1:8000/api/documents/${docId}`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/documents/${docId}`,
         { status: newStatus },
         { headers: { Authorization: `Bearer ${token}` } }
       );
