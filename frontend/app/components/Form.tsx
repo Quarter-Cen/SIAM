@@ -331,6 +331,9 @@ const Form = () => {
               <option value="3">อ.เชาวน์ ปอแก้ว</option>
               <option value="1">ดร.ณัฐพล หาญสมุทร</option>
               <option value="7">ดร.สุจิตตรา สาระคนธ์</option>
+              <option value="4">ดร.อภิวัฒน์ บุตรวงค์</option>
+              <option value="5">อ.ชลติพันธ์  เปล่งวิทยา</option>
+              <option value="6">อ.เมธยา ราชคมน์</option>
             </select>
           </label>
         </div>

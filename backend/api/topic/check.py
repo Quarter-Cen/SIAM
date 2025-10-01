@@ -158,4 +158,3 @@ async def team_stat(item: CheckTopic):
         raise HTTPException(
             status_code=500, detail=f"An unexpected error occurred: {e}"        
             )
-    

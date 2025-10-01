@@ -130,7 +130,7 @@ const IndividualPerformance: React.FC = () => {
       <thead>
        <tr className="bg-white">
         <th className="px-4 py-3 text-left text-[#111518] text-sm font-medium leading-normal w-[20%]">
-         รหัสนิสิต
+         ชื่อ
         </th>
         <th className="px-4 py-3 text-left text-[#111518] text-sm font-medium leading-normal w-[15%]">
          งานที่เสร็จ
